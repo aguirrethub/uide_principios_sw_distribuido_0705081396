@@ -264,7 +264,7 @@ Apuntando a otro host o puerto:
 
 ```bash
 ./gradlew :udp:runClient
-./gradlew :udp:runClient -Phost=localhost -Pport=8080 -Pname=Ana
+./gradlew :udp:runClient -Phost=localhost -Pport=8080 -Pjugador=Ana
 ```
 
 El cliente guarda la imagen en `udp-recibidas/` y, si hay entorno gráfico, la abre
@@ -1028,7 +1028,7 @@ tail -f servidor.log
 
 ```bash
 ./gradlew :tcp:runClient -Phost=<IP-PUBLICA-DE-LA-INSTANCIA> -Pport=8080
-./gradlew :udp:runClient -Phost=<IP-PUBLICA-DE-LA-INSTANCIA> -Pport=8080 -Pname=Ana
+./gradlew :udp:runClient -Phost=<IP-PUBLICA-DE-LA-INSTANCIA> -Pport=8080 -Pjugador=Ana
 ```
 
 ### 11.5 Comprobar la conectividad si algo falla
@@ -1075,7 +1075,7 @@ Duración aproximada: **6–8 minutos**.
 | 16 | Abrir **dos clientes a la vez** | "Atiende varios jugadores en paralelo, cada uno con su reloj" |
 | 17 | Mostrar `leaderboard.json` | "El marcador es persistente: sobrevive a reinicios del servidor" |
 | 18 | Reiniciar el servidor y ver el marcador cargado | "Aquí está, lo recupera del disco" |
-| 19 | `./gradlew :udp:runServer` y `:udp:runClient -Pname=Ana` | "Versión UDP: envía el nombre y recibe la imagen en 65 datagramas" |
+| 19 | `./gradlew :udp:runServer` y `:udp:runClient -Pjugador=Ana` | "Versión UDP: envía el nombre y recibe la imagen en 65 datagramas" |
 | 20 | La barra de progreso de los trozos | "Se fragmenta para que cada datagrama quepa en la MTU" |
 | 21 | **Ejecución remota**: servidor en AWS, cliente en local | "Y aquí el mismo juego contra un servidor en AWS" |
 | 22 | El README: protocolo y UML | "El protocolo JSON y los diagramas están documentados" |
@@ -1090,6 +1090,7 @@ que es más legible en pantalla que el JSON completo.
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
+| **`Unsupported class file major version 69`** | **Java 25 con Gradle 8.14.3**, que solo llega hasta Java 24 | Instala un JDK 17 o 21 y apunta Gradle a él (ver abajo) |
 | `el puerto 8080 ya está en uso` | Otro proceso lo ocupa | `./gradlew :tcp:runServer -Pport=9099` y el cliente con el mismo puerto |
 | `Could not resolve org.json:json` | Sin internet en la primera compilación | Conéctate una vez; después queda en la caché de Gradle |
 | El cliente dice "No se pudo conectar" | El servidor no está arrancado, o IP/puerto mal | Revisa la terminal del servidor; prueba `nc -vz <host> <puerto>` |
@@ -1099,6 +1100,33 @@ que es más legible en pantalla que el JSON completo.
 | El cliente UDP dice "la imagen está incompleta" | Pérdida alta de datagramas | Reduce `CHUNK_SIZE` o sube `MAX_REINTENTOS` en `UdpProtocol.java` |
 | `UnsupportedClassVersionError` | JDK demasiado antiguo | Se necesita JDK 11 o superior |
 | El marcador sale vacío | Todavía no terminó ninguna partida | Se crea `leaderboard.json` al acabar la primera |
+| El cliente UDP saluda con un nombre raro | Se usó `-Pname` en vez de `-Pjugador` | `name` es una propiedad reservada de Gradle (el nombre del subproyecto). Usa `-Pjugador=Ana` |
+
+### Si tienes Java 25 instalado
+
+Gradle 8.14.3 —la versión que trae el *wrapper*— soporta hasta **Java 24**. Con
+Java 25 la compilación falla con `Unsupported class file major version 69`
+(el 69 es Java 25). El soporte de Java 25 llegó en Gradle 9.1.
+
+La solución más simple es instalar un JDK LTS y apuntar Gradle a él:
+
+```bash
+# Ubuntu / Debian
+sudo apt update && sudo apt install -y openjdk-21-jdk
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+java -version      # debe decir 21
+```
+
+Para que quede permanente, añade las dos líneas `export` al final de `~/.bashrc`.
+
+En Windows, instala **Temurin JDK 21** desde [adoptium.net](https://adoptium.net)
+marcando *"Set JAVA_HOME"* y *"Add to PATH"* durante la instalación.
+
+> Se eligió Gradle 8.14.3 + JDK 11–21 porque es la combinación con la que se
+> compiló y probó el proyecto. Subir el *wrapper* a Gradle 9 también resolvería
+> el problema, pero Gradle 9 introduce cambios que requieren revisar el
+> `build.gradle`.
 
 ---
 
@@ -1114,5 +1142,5 @@ que es más legible en pantalla que el JSON completo.
 ./gradlew :tcp:runClientConsola                              # cliente sin interfaz gráfica
 
 ./gradlew :udp:runServer                                     # servidor UDP  (8080)
-./gradlew :udp:runClient -Pname=Ana                          # cliente UDP
+./gradlew :udp:runClient -Pjugador=Ana                          # cliente UDP
 ```

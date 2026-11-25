@@ -534,7 +534,9 @@ public class GameClient implements ClientGui.Acciones, ServerConnection.Listener
         if (ventana != null) {
             ventana.setConexion("desconectado", false);
             ventana.estadoDesconectado();
-            ventana.limpiarImagen("Se perdió la conexión con el servidor.");
+            ventana.limpiarImagen(despedidaRecibida
+                    ? "Sesión finalizada.\n¡Gracias por jugar!"
+                    : "Se perdió la conexión con el servidor.");
         }
         if (modoConsola) {
             System.exit(0);

@@ -80,7 +80,7 @@ tasks.register('ayuda') {
              ./gradlew :udp:runServer -Pport=8080
 
   Cliente:   ./gradlew :udp:runClient
-             ./gradlew :udp:runClient -Phost=localhost -Pport=8080 -Pname=Ana
+             ./gradlew :udp:runClient -Phost=localhost -Pport=8080 -Pjugador=Ana
 
   Valores por defecto: host=localhost  puerto=8080
 ========================================================================

@@ -9,6 +9,7 @@
  * Parametros por defecto:
  *   host = localhost
  *   port = 8080
+ *   jugador = Jugador   (se pasa con -Pjugador=Ana)
  */
 
 description = 'Adivina el Personaje - version reducida sobre UDP'
@@ -19,7 +20,10 @@ def defaultName = 'Jugador'
 
 def resolvedHost = project.findProperty('host') ?: defaultHost
 def resolvedPort = project.findProperty('port') ?: defaultPort
-def resolvedName = project.findProperty('name') ?: defaultName
+// OJO: no se puede usar -Pname. Gradle ya define 'name' como el nombre
+// del subproyecto, asi que findProperty('name') devolveria 'udp' y nunca
+// el valor que pase el usuario. Por eso la propiedad se llama 'jugador'.
+def resolvedName = project.findProperty('jugador') ?: defaultName
 
 // Las imagenes de img/ se copian al classpath de runtime bajo "img/".
 processResources {
@@ -46,7 +50,7 @@ tasks.register('runServer', JavaExec) {
 
 // ---------------------------------------------------------------------------
 // gradle :udp:runClient
-// gradle :udp:runClient -Phost=localhost -Pport=8080 -Pname=Ana
+// gradle :udp:runClient -Phost=localhost -Pport=8080 -Pjugador=Ana
 // ---------------------------------------------------------------------------
 tasks.register('runClient', JavaExec) {
     group = 'application'
