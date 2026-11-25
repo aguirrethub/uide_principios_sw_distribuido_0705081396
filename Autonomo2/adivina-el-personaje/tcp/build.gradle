@@ -1,0 +1,89 @@
+/*
+ * tcp/build.gradle
+ * Subproyecto :tcp - Juego completo cliente/servidor sobre TCP con protocolo JSON.
+ *
+ * Parametros por defecto exigidos por el enunciado:
+ *   host = localhost
+ *   port = 8080
+ */
+
+description = 'Juego Adivina el Personaje - version completa sobre TCP'
+
+// ---------------------------------------------------------------------------
+// Valores por defecto. Se pueden sobreescribir con -Phost=... y -Pport=...
+// ---------------------------------------------------------------------------
+def defaultHost = 'localhost'
+def defaultPort = '8080'
+
+def resolvedHost = project.findProperty('host') ?: defaultHost
+def resolvedPort = project.findProperty('port') ?: defaultPort
+
+// ---------------------------------------------------------------------------
+// Las imagenes viven en img/ en la raiz del repositorio (lo pide el enunciado).
+// Se copian al classpath de runtime bajo "img/" para que el servidor las
+// encuentre sin duplicarlas dentro de src/main/resources.
+//
+// Se hace con processResources (y no tocando sourceSets.resources.srcDir)
+// porque un patron include en el source set se aplicaria tambien a
+// src/main/resources y dejaria fuera characters.json.
+// ---------------------------------------------------------------------------
+processResources {
+    from(rootProject.file('img')) {
+        into 'img'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// gradle :tcp:runServer            -> localhost:8080
+// gradle :tcp:runServer -Pport=9099
+// ---------------------------------------------------------------------------
+tasks.register('runServer', JavaExec) {
+    group = 'application'
+    description = 'Inicia el servidor TCP del juego (por defecto puerto 8080)'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'server.GameServer'
+    standardInput = System.in
+    // El marcador (leaderboard.json) se guarda en la raiz del proyecto,
+    // no dentro de tcp/, para que sea facil de encontrar.
+    workingDir = rootProject.projectDir
+
+    args resolvedPort
+}
+
+// ---------------------------------------------------------------------------
+// gradle :tcp:runClient                                  -> localhost:8080
+// gradle :tcp:runClient -Phost=localhost -Pport=8080
+// gradle :tcp:runClient -Pnogui=true                     -> cliente de consola
+// ---------------------------------------------------------------------------
+tasks.register('runClient', JavaExec) {
+    group = 'application'
+    description = 'Inicia el cliente TCP con interfaz grafica (por defecto localhost:8080)'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'client.GameClient'
+    standardInput = System.in
+    workingDir = rootProject.projectDir
+
+    args resolvedHost, resolvedPort
+
+    if (project.hasProperty('nogui')) {
+        args '--nogui'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Cliente alternativo en modo consola (util para probar por SSH / sin X11)
+//   gradle :tcp:runClientConsola
+// ---------------------------------------------------------------------------
+tasks.register('runClientConsola', JavaExec) {
+    group = 'application'
+    description = 'Inicia el cliente TCP en modo consola (sin interfaz grafica)'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'client.GameClient'
+    standardInput = System.in
+    workingDir = rootProject.projectDir
+
+    args resolvedHost, resolvedPort, '--nogui'
+}

@@ -1,0 +1,166 @@
+/*
+ * uml-clases.dot
+ * Diagrama UML de clases principal del proyecto "Adivina el Personaje".
+ *
+ * Para regenerar las imágenes:
+ *     dot -Tpng docs/uml-clases.dot -o docs/uml-clases.png
+ *     dot -Tsvg docs/uml-clases.dot -o docs/uml-clases.svg
+ */
+
+digraph UML {
+    rankdir = TB;
+    bgcolor = "white";
+    compound = true;
+    splines = polyline;
+    nodesep = 0.45;
+    ranksep = 0.70;
+
+    node [shape = record,
+          fontname = "Helvetica",
+          fontsize = 10,
+          style = "filled",
+          fillcolor = "#FFFFFF",
+          color = "#37415A",
+          penwidth = 1.2];
+
+    edge [fontname = "Helvetica", fontsize = 9, color = "#37415A"];
+
+    /* ================= paquete common ================= */
+    subgraph cluster_common {
+        label = "  paquete  common  (compartido por cliente y servidor)  ";
+        fontname = "Helvetica-Bold";
+        fontsize = 12;
+        style = "filled";
+        fillcolor = "#EEF2FA";
+        color = "#8FA3C8";
+
+        Protocol [label = "{«utilidad»\lProtocol|+ VERSION : String\l+ DEFAULT_HOST : String = localhost\l+ DEFAULT_PORT : int = 8080\l+ REQ_HELLO/START/GUESS/MORE/NEXT…\l+ RES_WELCOME/CLUE/GAME_OVER/ERROR…\l+ ERR_BAD_JSON/UNKNOWN_TYPE/…\l+ FRASES_PARA_GANAR : int = 3\l+ DURACION_PARTIDA_SEG : int = 60\l}"];
+
+        Message [label = "{Message|- version : String\l- type : String\l- timestamp : long\l- payload : JSONObject\l|+ of(type) : Message\l+ error(code, msg) : Message\l+ put(k, v) : Message\l+ parse(byte[]) : Message\l+ toBytes() : byte[]\l}"];
+
+        JsonUtils [label = "{«utilidad»\lJsonUtils|+ fromByteArray(byte[]) : JSONObject\l+ toByteArray(JSONObject) : byte[]\l+ requireString(json, campo) : String\l+ requireBoolean(json, campo) : boolean\l}"];
+
+        NetworkUtils [label = "{«utilidad»\lNetworkUtils|+ send(out, byte[])\l+ receive(in) : byte[]\l- readFully(in, n) : byte[]\l+ intToBytes(int) : byte[]\l}"];
+
+        ProtocolException [label = "{ProtocolException|- code : String\l|+ getCode() : String\l}"];
+    }
+
+    /* ================= paquete server ================= */
+    subgraph cluster_server {
+        label = "  paquete  server  (TCP)  ";
+        fontname = "Helvetica-Bold";
+        fontsize = 12;
+        style = "filled";
+        fillcolor = "#EAF5EE";
+        color = "#8CC3A3";
+
+        GameServer [label = "{GameServer|- puerto : int\l- catalogo : CharacterRepository\l- marcador : Leaderboard\l- imagenes : ImageStore\l- temporizadores : ScheduledExecutorService\l- hilosClientes : ExecutorService\l|+ main(String[])\l+ iniciar()\l- precargarImagenes()\l}"];
+
+        ClientHandler [label = "{ClientHandler\l«Runnable, GameSession.Listener»|- socket : Socket\l- sesion : GameSession\l|+ run()\l- bucleDeMensajes()\l- despachar(Message)\l+ enviar(Message)\l}"];
+
+        GameSession [label = "{GameSession|- estado : Estado\l- jugador : String\l- actual : MovieCharacter\l- acertadas : int\l- puntaje : int\l- finPartidaMs : long\l|+ hello(nombre)\l+ start()\l+ guess(respuesta)\l+ more()\l+ next()\l+ continuar(boolean)\l+ quit()\l- tiempoAgotado()\l- calcularPuntos() : int\l}"];
+
+        Estado [label = "{«enumeración»\lGameSession.Estado|CONECTADO\lEN_LOBBY\lJUGANDO\lFIN_PARTIDA\lTERMINADO\l}",
+                fillcolor = "#F7FBF8"];
+
+        Listener [label = "{«interfaz»\lGameSession.Listener|+ enviar(Message)\l+ log(String)\l}",
+                  fillcolor = "#F7FBF8"];
+
+        CharacterRepository [label = "{CharacterRepository|- personajes : List\<MovieCharacter\>\l|+ aleatorio(usados) : MovieCharacter\l+ todos() : List\l- cargarDesdeRecurso()\l}"];
+
+        MovieCharacter [label = "{MovieCharacter|- id, name, movie : String\l- year : int\l- clues : List\<String\> (4)\l- imagePath, revealImagePath : String\l|+ getClue(i) : String\l+ matches(respuesta) : boolean\l+ normalizar(texto) : String\l}"];
+
+        ImageStore [label = "{ImageStore|- cache : Map\<String, String\>\l|+ getBase64(ruta) : String\l}"];
+
+        Leaderboard [label = "{Leaderboard|- entradas : Map\<String, ScoreEntry\>\l- lock : ReadWriteLock\l- archivo : Path\l|+ registrarPartida(jugador, score, gano) : int\l+ top() : List\<ScoreEntry\>\l+ toJsonArray() : JSONArray\l- guardar()  // persistencia\l- cargar()\l}"];
+
+        ScoreEntry [label = "{ScoreEntry|- name : String\l- bestScore, games, wins : int\l- lastPlayed : String\l|+ registrarPartida(...)\l+ toJson() : JSONObject\l}"];
+    }
+
+    /* ================= paquete client ================= */
+    subgraph cluster_client {
+        label = "  paquete  client  (TCP)  ";
+        fontname = "Helvetica-Bold";
+        fontsize = 12;
+        style = "filled";
+        fillcolor = "#FDF2E6";
+        color = "#E0B178";
+
+        GameClient [label = "{GameClient\l«ClientGui.Acciones, ServerConnection.Listener»|- host : String\l- puerto : int\l- modoConsola : boolean\l|+ main(String[])\l+ iniciarPartida()\l+ adivinar(String)\l+ pedirPista()\l+ onMessage(Message)\l+ onDisconnected(String)\l}"];
+
+        ServerConnection [label = "{ServerConnection|- socket : Socket\l- hiloLector : Thread\l|+ conectar()\l+ enviar(Message) : boolean\l- bucleLectura()   // hilo aparte\l+ cerrar()\l}"];
+
+        Acciones [label = "{«interfaz»\lClientGui.Acciones|+ iniciarPartida()\l+ adivinar(String)\l+ pedirPista()\l+ siguientePersonaje()\l+ pedirMarcador()\l+ salir()\l}", fillcolor = "#FFFBF5"];
+
+        ConnListener [label = "{«interfaz»\lServerConnection.Listener|+ onMessage(Message)\l+ onProtocolError(e)\l+ onDisconnected(motivo)\l}", fillcolor = "#FFFBF5"];
+
+        ClientGui [label = "{ClientGui   extends JFrame|- panelImagen : PicturePanel\l- panelSalida : OutputPanel\l- relojLocal : Timer\l|+ setEstado(aciertos, obj, pts, seg)\l+ setFrase(String)\l+ mostrarImagenOculta(img, n)\l+ preguntarContinuar(msg) : boolean\l+ mostrarMarcador(filas)\l}"];
+
+        PicturePanel [label = "{PicturePanel   extends JPanel|- imagenCompleta : BufferedImage\l- baldosas : BufferedImage[][]\l- visibles : boolean[][]\l|+ mostrarOculta(img, n)\l+ revelar(n)\l+ mostrarCompleta(img)\l# paintComponent(g)\l}"];
+
+        OutputPanel [label = "{OutputPanel   extends JPanel|- area : JTextPane\l|+ info / acierto / fallo / error / pista\l+ append(texto, Tipo)\l}"];
+
+        GridMaker [label = "{«utilidad»\lGridMaker|+ fromBase64(String) : BufferedImage\l+ slice(img, filas, cols) : img[][]\l+ scaleToFit(img, w, h) : BufferedImage\l+ ordenDeRevelado(f, c) : int[][]\l}"];
+    }
+
+    /* ================= subproyecto udp ================= */
+    subgraph cluster_udp {
+        label = "  subproyecto  :udp  (versión reducida)  ";
+        fontname = "Helvetica-Bold";
+        fontsize = 12;
+        style = "filled";
+        fillcolor = "#F3EEFA";
+        color = "#A992CE";
+
+        UdpProtocol [label = "{«utilidad»\lUdpProtocol|+ REQ_NAME / REQ_RESEND\l+ RES_IMAGE_INFO / IMAGE_CHUNK / ERROR\l+ CHUNK_SIZE : int = 1200\l+ TIMEOUT_MS : int = 1500\l|+ numeroDeChunks(len) : int\l+ chunk(base64, seq) : String\l}"];
+
+        UdpMessage [label = "{UdpMessage|- type : String\l- payload : JSONObject\l|+ of(type) : UdpMessage\l+ toPacket(dir, puerto) : DatagramPacket\l+ parse(DatagramPacket) : UdpMessage\l}"];
+
+        UdpServer [label = "{UdpServer|- socket : DatagramSocket\l- transferencias : Map (LRU)\l|+ main(String[])\l- atenderName(...)\l- atenderResend(...)\l- elegirImagen(nombre) : String\l}"];
+
+        UdpClient [label = "{UdpClient|- socket : DatagramSocket\l|+ main(String[])\l- enviarNombreConReintentos()\l- recibirChunks(...)\l- calcularFaltantes(...)\l}"];
+    }
+
+    /* ================= relaciones ================= */
+
+    /* composición / agregación (rombo lleno) */
+    edge [arrowhead = "none", arrowtail = "diamond", dir = both];
+    GameServer    -> ClientHandler       [taillabel = "1", headlabel = "0..*", label = "crea un hilo\npor cliente"];
+    ClientHandler -> GameSession         [taillabel = "1", headlabel = "1"];
+    CharacterRepository -> MovieCharacter [taillabel = "1", headlabel = "8"];
+    Leaderboard   -> ScoreEntry          [taillabel = "1", headlabel = "0..*"];
+    ClientGui     -> PicturePanel        [taillabel = "1", headlabel = "1"];
+    ClientGui     -> OutputPanel         [taillabel = "1", headlabel = "1"];
+    GameClient    -> ServerConnection    [taillabel = "1", headlabel = "1"];
+    GameClient    -> ClientGui           [taillabel = "1", headlabel = "1"];
+
+    /* asociación / uso (flecha simple punteada) */
+    edge [arrowhead = "vee", arrowtail = "none", dir = forward, style = "dashed", color = "#6B7792"];
+    GameSession   -> CharacterRepository [label = "usa"];
+    GameSession   -> Leaderboard         [label = "usa"];
+    GameSession   -> ImageStore          [label = "usa"];
+    GameSession   -> Estado;
+    GameSession   -> Message             [label = "construye"];
+    ClientHandler -> NetworkUtils        [label = "envía/recibe"];
+    ServerConnection -> NetworkUtils     [label = "envía/recibe"];
+    ServerConnection -> Message;
+    Message       -> Protocol;
+    Message       -> JsonUtils;
+    Message       -> ProtocolException   [label = "lanza"];
+    PicturePanel  -> GridMaker           [label = "usa"];
+    GameClient    -> GridMaker           [label = "decodifica\nimágenes"];
+    UdpServer     -> UdpMessage;
+    UdpClient     -> UdpMessage;
+    UdpMessage    -> UdpProtocol;
+
+    /* realización de interfaces (flecha hueca punteada) */
+    edge [arrowhead = "onormal", style = "dashed", color = "#2F6E46"];
+    ClientHandler -> Listener            [label = "implementa"];
+    GameSession   -> Listener            [label = "notifica", style = "dotted", arrowhead = "vee"];
+
+    edge [color = "#B0761F"];
+    GameClient -> Acciones               [label = "implementa"];
+    GameClient -> ConnListener           [label = "implementa"];
+    ClientGui  -> Acciones               [label = "invoca", style = "dotted", arrowhead = "vee"];
+    ServerConnection -> ConnListener     [label = "notifica", style = "dotted", arrowhead = "vee"];
+}

@@ -1,0 +1,62 @@
+/*
+ * udp/build.gradle
+ * Subproyecto :udp - Implementacion reducida sobre UDP.
+ *
+ * El cliente envia su nombre y el servidor responde con una imagen.
+ * Los mensajes tambien viajan en JSON y las imagenes se fragmentan en
+ * datagramas (ver UdpProtocol) porque un datagrama UDP tiene tamano limitado.
+ *
+ * Parametros por defecto:
+ *   host = localhost
+ *   port = 8080
+ */
+
+description = 'Adivina el Personaje - version reducida sobre UDP'
+
+def defaultHost = 'localhost'
+def defaultPort = '8080'
+def defaultName = 'Jugador'
+
+def resolvedHost = project.findProperty('host') ?: defaultHost
+def resolvedPort = project.findProperty('port') ?: defaultPort
+def resolvedName = project.findProperty('name') ?: defaultName
+
+// Las imagenes de img/ se copian al classpath de runtime bajo "img/".
+processResources {
+    from(rootProject.file('img')) {
+        into 'img'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// gradle :udp:runServer            -> puerto 8080
+// gradle :udp:runServer -Pport=9099
+// ---------------------------------------------------------------------------
+tasks.register('runServer', JavaExec) {
+    group = 'application'
+    description = 'Inicia el servidor UDP (por defecto puerto 8080)'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'udp.server.UdpServer'
+    standardInput = System.in
+    workingDir = rootProject.projectDir
+
+    args resolvedPort
+}
+
+// ---------------------------------------------------------------------------
+// gradle :udp:runClient
+// gradle :udp:runClient -Phost=localhost -Pport=8080 -Pname=Ana
+// ---------------------------------------------------------------------------
+tasks.register('runClient', JavaExec) {
+    group = 'application'
+    description = 'Inicia el cliente UDP: envia un nombre y recibe una imagen'
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'udp.client.UdpClient'
+    standardInput = System.in
+    // Las imagenes recibidas se guardan en udp-recibidas/ en la raiz.
+    workingDir = rootProject.projectDir
+
+    args resolvedHost, resolvedPort, resolvedName
+}

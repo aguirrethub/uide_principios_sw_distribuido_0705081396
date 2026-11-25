@@ -1,0 +1,72 @@
+/*
+ * uml-estados.dot
+ * Diagrama UML de estados de la sesión de un cliente (clase GameSession).
+ *
+ * Para regenerar:
+ *     dot -Tpng docs/uml-estados.dot -o docs/uml-estados.png
+ */
+
+digraph Estados {
+    rankdir = LR;
+    ratio = compress;
+    bgcolor = "white";
+    nodesep = 0.5;
+    ranksep = 0.85;
+
+    label = "Máquina de estados de la sesión (GameSession)";
+    labelloc = "t";
+    fontname = "Helvetica-Bold";
+    fontsize = 15;
+
+    node [fontname = "Helvetica", fontsize = 11, style = "filled,rounded",
+          shape = "box", color = "#37415A", penwidth = 1.3];
+    edge [fontname = "Helvetica", fontsize = 9, color = "#37415A"];
+
+    inicio [shape = circle, label = "", width = 0.22, style = filled,
+            fillcolor = "#222222", color = "#222222"];
+    fin    [shape = doublecircle, label = "", width = 0.20, style = filled,
+            fillcolor = "#222222", color = "#222222"];
+
+    CONECTADO   [fillcolor = "#EEF2FA", label = "CONECTADO\n\nsocket abierto,\njugador sin identificar"];
+    EN_LOBBY    [fillcolor = "#EAF5EE", label = "EN_LOBBY\n\njugador identificado,\nsin partida en curso"];
+    JUGANDO     [fillcolor = "#FDF2E6", label = "JUGANDO\n\nreloj de 60 s activo,\npersonaje asignado"];
+    FIN_PARTIDA [fillcolor = "#F3EEFA", label = "FIN_PARTIDA\n\nesperando respuesta a\n¿jugar otra vez?"];
+    TERMINADO   [fillcolor = "#FBE9E9", label = "TERMINADO\n\nse envió BYE,\nse cierra el socket"];
+
+    inicio      -> CONECTADO   [label = "  accept()"];
+    CONECTADO   -> EN_LOBBY    [label = "  HELLO { name }\n  / enviar WELCOME + marcador"];
+    EN_LOBBY    -> JUGANDO     [label = "  START\n  / arrancar reloj 60 s,\n    enviar CLUE"];
+
+    JUGANDO     -> JUGANDO     [label = " GUESS / MORE / NEXT / LEADERBOARD ",
+                                headport = "n", tailport = "w"];
+
+    detalle [shape = note, fillcolor = "#F6FAFF", color = "#8FA3C8",
+             fontsize = 9, style = "filled",
+             label = "Transiciones internas de JUGANDO:\l"
+                   + "  GUESS incorrecto  / GUESS_RESULT(correct=false), intentos+1\l"
+                   + "  GUESS correcto    / +puntos, nueva frase (si acertadas < 3)\l"
+                   + "  MORE              / siguiente pista del mismo personaje, −10 pts\l"
+                   + "  NEXT              / personaje nuevo, −15 pts\l"
+                   + "  LEADERBOARD       / enviar marcador, sin cambiar de estado\l"];
+    detalle -> JUGANDO [style = invis];
+
+    JUGANDO     -> FIN_PARTIDA [label = "  3.ª frase correcta\n  / GAME_OVER (won=true)\n    + imagen de felicitaciones",
+                                color = "#2F6E46", fontcolor = "#2F6E46"];
+    JUGANDO     -> FIN_PARTIDA [label = "  se agotan los 60 s\n  (empuje del servidor)\n  / GAME_OVER (won=false)\n    + imagen de derrota",
+                                color = "#B23A36", fontcolor = "#B23A36", style = "dashed"];
+
+    FIN_PARTIDA -> EN_LOBBY    [label = "  CONTINUE { again: true }\n  / enviar WELCOME"];
+    FIN_PARTIDA -> TERMINADO   [label = "  CONTINUE { again: false }\n  / enviar BYE"];
+
+    CONECTADO   -> TERMINADO   [label = "  QUIT  /  BYE", style = "dotted"];
+    EN_LOBBY    -> TERMINADO   [label = "  QUIT  /  BYE", style = "dotted"];
+    JUGANDO     -> TERMINADO   [label = "  QUIT  /  BYE", style = "dotted"];
+
+    TERMINADO   -> fin         [label = "  close()\n  el servidor queda libre\n  para otro cliente"];
+
+    /* Nota sobre errores */
+    nota [shape = note, fillcolor = "#FFFDF0", color = "#C9B47A",
+          fontsize = 9, style = "filled",
+          label = "En CUALQUIER estado, un mensaje mal formado o un comando\lno válido para el estado actual produce una respuesta ERROR\l(BAD_JSON, UNKNOWN_TYPE, INVALID_STATE, …) SIN cambiar de\lestado y SIN cerrar la conexión.\l"];
+    nota -> JUGANDO [style = invis];
+}

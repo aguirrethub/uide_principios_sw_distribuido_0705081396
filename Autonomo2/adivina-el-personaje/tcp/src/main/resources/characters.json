@@ -1,0 +1,125 @@
+{
+  "_comentario": "Catálogo de personajes del juego. Cada personaje tiene exactamente 4 pistas: la primera es la frase que dijo y las siguientes son pistas de apoyo que el jugador puede pedir con el comando MORE. 'aliases' permite aceptar respuestas escritas de varias formas.",
+  "characters": [
+    {
+      "id": "vader",
+      "name": "Darth Vader",
+      "movie": "Star Wars",
+      "year": 1977,
+      "image": "img/characters/vader_mystery.png",
+      "revealImage": "img/characters/vader_reveal.png",
+      "aliases": ["vader", "darth vader", "anakin", "anakin skywalker", "lord vader"],
+      "clues": [
+        "Yo soy tu padre.",
+        "Respira con un sonido mecánico inconfundible y viste completamente de negro.",
+        "Fue aprendiz de Obi-Wan Kenobi antes de pasarse al Lado Oscuro.",
+        "Su verdadero nombre es Anakin Skywalker y es el padre de Luke y Leia."
+      ]
+    },
+    {
+      "id": "forrest",
+      "name": "Forrest Gump",
+      "movie": "Forrest Gump",
+      "year": 1994,
+      "image": "img/characters/forrest_mystery.png",
+      "revealImage": "img/characters/forrest_reveal.png",
+      "aliases": ["forrest", "forrest gump", "gump"],
+      "clues": [
+        "La vida es como una caja de chocolates.",
+        "Cuenta su historia a desconocidos sentado en la banca de una parada de autobús.",
+        "Un día empezó a correr por todo Estados Unidos y no paró durante tres años.",
+        "Su mejor amigo del ejército, Bubba, estaba obsesionado con los camarones."
+      ]
+    },
+    {
+      "id": "vito",
+      "name": "Vito Corleone",
+      "movie": "El Padrino",
+      "year": 1972,
+      "image": "img/characters/vito_mystery.png",
+      "revealImage": "img/characters/vito_reveal.png",
+      "aliases": ["vito", "vito corleone", "don vito", "el padrino", "don corleone", "corleone"],
+      "clues": [
+        "Le haré una oferta que no podrá rechazar.",
+        "Habla en voz baja y ronca mientras acaricia un gato en su despacho.",
+        "Es el jefe de una familia mafiosa italoamericana en Nueva York.",
+        "Sus hijos se llaman Sonny, Fredo y Michael."
+      ]
+    },
+    {
+      "id": "rocky",
+      "name": "Rocky Balboa",
+      "movie": "Rocky",
+      "year": 1976,
+      "image": "img/characters/rocky_mystery.png",
+      "revealImage": "img/characters/rocky_reveal.png",
+      "aliases": ["rocky", "rocky balboa", "balboa", "semental italiano"],
+      "clues": [
+        "¡Adriana!",
+        "Entrena subiendo corriendo las escaleras del museo de Filadelfia.",
+        "Golpea reses congeladas dentro de un frigorífico como parte de su entrenamiento.",
+        "Es un boxeador italoamericano apodado El Semental Italiano."
+      ]
+    },
+    {
+      "id": "sparrow",
+      "name": "Jack Sparrow",
+      "movie": "Piratas del Caribe",
+      "year": 2003,
+      "image": "img/characters/sparrow_mystery.png",
+      "revealImage": "img/characters/sparrow_reveal.png",
+      "aliases": ["jack sparrow", "sparrow", "jack", "capitán jack sparrow", "capitan jack sparrow", "capitán jack"],
+      "clues": [
+        "Capitán Jack Sparrow, si no le importa.",
+        "Camina tambaleándose, como si el suelo se moviera bajo sus pies.",
+        "Busca recuperar su barco, el Perla Negra, y lleva una brújula que no apunta al norte.",
+        "Es un pirata con rastas, pañuelo rojo y los ojos delineados de negro."
+      ]
+    },
+    {
+      "id": "dorothy",
+      "name": "Dorothy Gale",
+      "movie": "El Mago de Oz",
+      "year": 1939,
+      "image": "img/characters/dorothy_mystery.png",
+      "revealImage": "img/characters/dorothy_reveal.png",
+      "aliases": ["dorothy", "dorothy gale", "dorotea"],
+      "clues": [
+        "Se está mejor en casa que en ningún sitio.",
+        "Un tornado se lleva su casa volando desde una granja de Kansas.",
+        "Recorre un camino de baldosas amarillas junto a un espantapájaros, un leñador de hojalata y un león.",
+        "Lleva unos zapatos rojos brillantes y viaja con su perrito Toto."
+      ]
+    },
+    {
+      "id": "t800",
+      "name": "T-800",
+      "movie": "Terminator",
+      "year": 1984,
+      "image": "img/characters/t800_mystery.png",
+      "revealImage": "img/characters/t800_reveal.png",
+      "aliases": ["t-800", "t800", "terminator", "el exterminador", "exterminador"],
+      "clues": [
+        "Volveré.",
+        "Es un cyborg enviado desde el futuro, con un esqueleto metálico bajo la piel.",
+        "Lleva gafas oscuras, chaqueta de cuero negra y llega desnudo tras un relámpago.",
+        "Su misión original era eliminar a Sarah Connor antes de que naciera su hijo."
+      ]
+    },
+    {
+      "id": "woody",
+      "name": "Woody",
+      "movie": "Toy Story",
+      "year": 1995,
+      "image": "img/characters/woody_mystery.png",
+      "revealImage": "img/characters/woody_reveal.png",
+      "aliases": ["woody", "sheriff woody", "el vaquero woody"],
+      "clues": [
+        "¡Hay una serpiente en mi bota!",
+        "Es un juguete que cobra vida cuando los humanos no están mirando.",
+        "Siente celos cuando llega a la habitación un nuevo juguete espacial.",
+        "Es un vaquero de trapo con sombrero y una cuerda en la espalda; su dueño se llama Andy."
+      ]
+    }
+  ]
+}

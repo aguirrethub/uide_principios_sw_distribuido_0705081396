@@ -1,0 +1,89 @@
+/*
+ * build.gradle (raiz)
+ * Configuracion comun para los subproyectos :tcp y :udp
+ *
+ * Compatible con Gradle 6.7+ / 7.x / 8.x y JDK 11 o superior.
+ * Se incluye el Gradle Wrapper (./gradlew) para no depender de la version
+ * de Gradle instalada en la maquina del evaluador.
+ */
+
+subprojects {
+
+    apply plugin: 'java'
+
+    group = 'edu.distribuidos.adivina'
+    version = '1.0.0'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // Unica dependencia externa: libreria JSON de referencia (org.json)
+        implementation 'org.json:json:20231013'
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.compilerArgs << '-Xlint:deprecation'
+    }
+
+    tasks.withType(JavaExec).configureEach {
+        // Asegura que los acentos se muestren bien en consola y en la GUI.
+        // Desde Java 18 System.out usa la codificacion de la consola, por eso
+        // tambien se fijan stdout.encoding y stderr.encoding.
+        jvmArgs '-Dfile.encoding=UTF-8',
+                '-Dstdout.encoding=UTF-8',
+                '-Dstderr.encoding=UTF-8'
+    }
+}
+
+/*
+ * Tarea de conveniencia: compila ambos subproyectos de una sola vez.
+ *   ./gradlew construirTodo
+ */
+tasks.register('construirTodo') {
+    group = 'build'
+    description = 'Compila los subproyectos :tcp y :udp'
+    dependsOn ':tcp:classes', ':udp:classes'
+}
+
+/*
+ * Ayuda rapida en consola:
+ *   ./gradlew ayuda
+ */
+tasks.register('ayuda') {
+    group = 'help'
+    description = 'Muestra los comandos disponibles del proyecto'
+    doLast {
+        println """
+========================================================================
+  ADIVINA EL PERSONAJE - Comandos disponibles
+========================================================================
+
+  VERSION TCP (juego completo)
+  ----------------------------
+  Servidor:  ./gradlew :tcp:runServer
+             ./gradlew :tcp:runServer -Pport=8080
+
+  Cliente:   ./gradlew :tcp:runClient
+             ./gradlew :tcp:runClient -Phost=localhost -Pport=8080
+
+  VERSION UDP (intercambio reducido nombre -> imagen)
+  ---------------------------------------------------
+  Servidor:  ./gradlew :udp:runServer
+             ./gradlew :udp:runServer -Pport=8080
+
+  Cliente:   ./gradlew :udp:runClient
+             ./gradlew :udp:runClient -Phost=localhost -Pport=8080 -Pname=Ana
+
+  Valores por defecto: host=localhost  puerto=8080
+========================================================================
+"""
+    }
+}

@@ -1,0 +1,14 @@
+/*
+ * settings.gradle
+ * Proyecto: Adivina el Personaje - Juego Cliente/Servidor TCP y UDP
+ * Materia: Principios de Sistemas de Software Distribuidos
+ *
+ * Build multiproyecto de Gradle con dos subproyectos independientes:
+ *   :tcp -> implementacion completa del juego sobre TCP con protocolo JSON propio
+ *   :udp -> implementacion reducida sobre UDP (nombre -> imagen)
+ */
+
+rootProject.name = 'adivina-el-personaje'
+
+include 'tcp'
+include 'udp'
